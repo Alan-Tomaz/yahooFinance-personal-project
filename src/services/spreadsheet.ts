@@ -1,16 +1,17 @@
 import { google } from "googleapis";
-import { GOOGLE_AUTH } from "../constants/config.js";
+import { GOOGLE_AUTH } from "../config/config.js";
+import type { ITicker } from "../models/financial.js";
 
 /**
  * Fetches information from a Google Spreadsheet based on the provided range and spreadsheet ID. Can be used to fetch data from your financial assets.
  * @param {string[]} range - An array of strings representing the ranges to fetch from the spreadsheet. Ex: ["Sheet1!A1:B2", "Sheet2!C3:D4"]
  * @param {string} spreadsheetId - The ID of the Google Spreadsheet to fetch data from. Encountered in the URL of the spreadsheet. Ex: "1aBcD2eFgHiJkLmNoPqRsTuVwXyZ1234567890"
- * @return {[{ticker: string, exchange: string}]} An array of objects containing the values fetched from the specified ranges in the spreadsheet. Especifically the tickers and the exchanges of the financial assets. Ex: [{ticker: "AAPL", exchange: "NASDAQ"}]
+ * @return {ITicker} An array of objects containing the values fetched from the specified ranges in the spreadsheet. Especifically the tickers and the exchanges of the financial assets. Ex: [{ticker: "AAPL", exchange: "NASDAQ", assetType: "STOCK"}]
  */
 export const getSpreadsheetTickets = async (
   range: string[],
   spreadsheetId: string,
-) => {
+): Promise<ITicker[]> => {
   try {
     const sheets = google.sheets({
       version: "v4",
@@ -22,7 +23,7 @@ export const getSpreadsheetTickets = async (
       ranges: range,
     });
 
-    const tickets = [];
+    const tickets: ITicker[] = [];
 
     if (!response.data.valueRanges) {
       throw new Error("No data found in the spreadsheet");
@@ -36,6 +37,7 @@ export const getSpreadsheetTickets = async (
         tickets.push({
           ticker: ticket[0],
           exchange: ticket[1],
+          assetType: ticket[2],
         });
       }
     }

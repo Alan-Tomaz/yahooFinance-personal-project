@@ -13,7 +13,7 @@ import {
  * Enable the Google Sheets API in your Google Cloud project and share the spreadsheet with the service account email to grant it access.
  * @return {google.auth.GoogleAuth} An authenticated GoogleAuth instance that can be used to access Google APIs.
  */
-export const googleAuthentication = async () => {
+const googleAuthentication = async () => {
   try {
     if (!GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY || !GOOGLE_PROJECT_ID) {
       throw new Error(
@@ -35,3 +35,5 @@ export const googleAuthentication = async () => {
     throw new Error("Error in Google Auth Authentication" + error);
   }
 };
+
+export const GOOGLE_AUTH = await googleAuthentication();

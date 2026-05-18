@@ -1,23 +1,23 @@
 import YahooFinance from "yahoo-finance2/src/index.ts";
 import { formatDate } from "../utils/formatDate.js";
-import type { IFinancialIndicatorsBRL } from "../models/financial.js";
+import type { ITicker } from "../models/financial.js";
 import {
   normalizeDy,
-  normalizeTicker,
+  normalizeTickerForYahooFinance,
   toPercent,
 } from "../utils/normalizes.js";
 import { LANGUAGE } from "../constants/config.js";
+import type { Prisma } from "../generated/prisma/client.js";
 
 /**
- * Fetches data from Yahoo Finance for a given ticket and calculates financial indicators based on the fetched data.
- * @param {{ticker: string, exchange: string}} ticket The stocker ticker symbol to fetch data
- * @returns {FinancialIndicatorsBRL} An object containing calculated financial indicators
+ * Fetches data from Yahoo Finance for a given ticket and calculates financial indicators based on the fetched data. Get Stock data from US and BR Stocks.
+ * @param {ITicker} ticket The stocker ticker symbol to fetch data
+ * @returns {Prisma.StockIndicatorsCreateInput} An object containing calculated financial indicators
  */
-export const fetchTicketInfoFromYahooFinance = async (ticket: {
-  ticker: string;
-  exchange: string;
-}) => {
-  const normalizedTicket = normalizeTicker(ticket.ticker, ticket.exchange);
+export const fetchTicketInfoFromYahooFinance = async (
+  ticket: ITicker,
+): Promise<Prisma.StockIndicatorsCreateInput> => {
+  const normalizedTicket = normalizeTickerForYahooFinance(ticket);
   try {
     const yahooFinance = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
 
@@ -77,7 +77,7 @@ export const fetchTicketInfoFromYahooFinance = async (ticket: {
     const ticketInfo = calcIndicatorsFromYahooFinance(
       quote,
       fundamentalsTimeSeries,
-      ticket.ticker,
+      ticket,
     );
     console.log(
       `Info for ticket ${normalizedTicket} fetched successfully from Yahoo Finance.`,
@@ -85,7 +85,7 @@ export const fetchTicketInfoFromYahooFinance = async (ticket: {
     return ticketInfo;
   } catch (error) {
     throw new Error(
-      `Error fetching ticket ${normalizedTicket} from Yahoo finance: ${error}`,
+      `Error fetching ticket ${normalizedTicket} from Yahoo finance (API): ${error}`,
     );
   }
 };
@@ -94,30 +94,26 @@ export const fetchTicketInfoFromYahooFinance = async (ticket: {
 const calcIndicatorsFromYahooFinance = (
   quote: any,
   fundamentalsTimeSeries: any,
-  ticker: string,
-): IFinancialIndicatorsBRL => {
+  ticket: ITicker,
+): Prisma.StockIndicatorsCreateInput => {
   if (!quote || !fundamentalsTimeSeries) {
     console.error("Quote or fundamentalsTimeSeries data is missing.");
-    return {} as IFinancialIndicatorsBRL;
+    return {} as Prisma.StockIndicatorsCreateInput;
   } else if (fundamentalsTimeSeries.length === 0) {
     console.error("Fundamentals time series data is empty.");
-    return {} as IFinancialIndicatorsBRL;
+    return {} as Prisma.StockIndicatorsCreateInput;
   }
 
   /* name */
-  const name = quote.price.shortName || quote.price.longName || ticker;
+  const name = quote.price.shortName || quote.price.longName || ticket.ticker;
   /* price */
   const price = quote.price.regularMarketPrice;
   /* PL */
-  const pl = quote.summaryDetail.trailingPE
-    ? quote.summaryDetail.trailingPE
-    : calcFIIPLYahooFinance(quote, fundamentalsTimeSeries);
+  const pl = quote.summaryDetail.trailingPE;
   /* DY */
   const dy = quote.summaryDetail.dividendYield;
   /* PVP */
-  const pvp = quote.defaultKeyStatistics.priceToBook
-    ? quote.defaultKeyStatistics.priceToBook
-    : calcFIIPVPYahooFinance(quote, fundamentalsTimeSeries);
+  const pvp = quote.defaultKeyStatistics.priceToBook;
   /* ROE */
   const roe = quote.financialData.returnOnEquity || 0;
   /* CAGR PROFIT */
@@ -183,14 +179,14 @@ const calcIndicatorsFromYahooFinance = (
       fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1]
         .stockholdersEquity) *
     100;
-  /* ===== FIIS ===== */
-  const lastDividend = quote.defaultKeyStatistics.lastDividendValue;
-  const ticketInfo: IFinancialIndicatorsBRL = {
-    ticker: ticker,
+  /* ===== STOCK INDICATORS ===== */
+  const ticketInfo: Prisma.StockIndicatorsCreateInput = {
+    assetType: ticket.assetType,
+    ticker: ticket.ticker,
     /* FORMAT DATE IN DD/MM/YYYY FORMAT */
     date: formatDate(new Date(), LANGUAGE),
     name,
-    price,
+    price: price || 0,
     pl: pl || 0,
     dy: normalizeDy(dy) || 0,
     pvp: pvp || 0,
@@ -201,9 +197,18 @@ const calcIndicatorsFromYahooFinance = (
     netDebtDivideByEBITDA: netDebtEbitda || 0,
     grossDebtNetWorth: debtToEquityPercent || 0,
     liquidity: liquidity || 0,
-    cagrProfit: { value: cagrProfit || 0, period: yearsCagrProfit || 0 },
-    cagrRevenue: { value: cagrRevenue || 0, period: yearsCagrRevenue || 0 },
-    lastDividend: lastDividend,
+    cagrProfit: {
+      create: {
+        value: cagrProfit,
+        period: yearsCagrProfit,
+      },
+    },
+    cagrRevenue: {
+      create: {
+        value: cagrRevenue,
+        period: yearsCagrRevenue,
+      },
+    },
   };
   return ticketInfo;
 };
@@ -234,48 +239,4 @@ const calculateROICYahooFinance = (fundamentals: any) => {
   const nopat = EBIT * (1 - taxRateForCalcs);
 
   return Number(((nopat / investedCapital) * 100).toFixed(2));
-};
-
-const calcFIIPVPYahooFinance = (quote: any, fundamentalsTimeSeries: any) => {
-  const price = quote.price.regularMarketPrice;
-
-  const fundamentals = fundamentalsTimeSeries
-    .filter(
-      (item: any) =>
-        item.periodType === "12M" &&
-        typeof item.stockholdersEquity === "number",
-    )
-    .sort(
-      (a: any, b: any) =>
-        new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
-  const equity = fundamentals[fundamentals.length - 1].stockholdersEquity || 0;
-
-  const shares =
-    fundamentals[fundamentals.length - 1].ordinarySharesNumber || 0;
-
-  const bookValuePerShare = equity / shares;
-
-  const pvp = price / bookValuePerShare;
-
-  return pvp;
-};
-
-const calcFIIPLYahooFinance = (quote: any, fundamentalsTimeSeries: any) => {
-  const fundamentals = fundamentalsTimeSeries
-    .filter(
-      (item: any) =>
-        item.periodType === "12M" && typeof item.netIncome === "number",
-    )
-    .sort(
-      (a: any, b: any) =>
-        new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
-
-  const marketCap = quote.price.marketCap || 0;
-
-  const netIncome = fundamentals[fundamentals.length - 1].netIncome || 0;
-
-  const pl = marketCap / netIncome;
-  return pl;
 };

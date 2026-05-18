@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model StockIndicators {
+  Id  Int @id @default(autoincrement())
+  assetType String?
+  ticker String
+  date String
+  name String?
+  price Decimal
+  pl Decimal?
+  pvp Decimal?
+  dy Decimal?
+  roe Decimal?
+  roic Decimal?
+  profitMargin Decimal?
+  evEbit Decimal?
+  netDebtDivideByEBITDA Decimal?
+  grossDebtNetWorth Decimal?
+  cagrRevenue StockCagr? @relation("revenuesCagr", fields: [stockRevenueCagrId], references: [id])
+  cagrProfit StockCagr? @relation("profitCagr", fields: [stockProfitCagrId], references: [id])
+  stockProfitCagrId Int?
+  stockRevenueCagrId Int?
+  liquidity Decimal?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model FiiIndicators {
+  Id  Int @id @default(autoincrement())
+  assetType String?
+  ticker String
+  date String
+  name String?
+  price Decimal
+  pvp Decimal?
+  vpc Decimal?
+  dy Decimal?
+  liquidity Decimal?
+  fiiRentabilityId Int?
+  rentability FiiRentability? @relation(fields: [fiiRentabilityId], references: [id])
+  assetsNumber Int?
+  financialVacancy Decimal?
+  physicalVacancy Decimal?
+  lastDividend Decimal?
+  quotaHolders Decimal?
+  fiiType String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FiiRentability {
+  id Int @id @default(autoincrement())
+  value Decimal?
+  periodYears Int?
+  fiiIndicators FiiIndicators[]
+}
+
+model StockCagr {
+  id Int @id @default(autoincrement())
+  value Decimal?
+  period Int?
+  stockRevenueIndicators StockIndicators[] @relation("revenuesCagr")
+  stockProfitIndicators StockIndicators[] @relation("profitCagr")
+}

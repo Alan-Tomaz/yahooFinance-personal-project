@@ -1,3 +1,5 @@
 node_modules
 .env
 dist
+message.txt
+/src/generated/prisma

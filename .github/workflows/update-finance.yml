@@ -1,11 +1,10 @@
-# Atualiza Indicadores de ativos financeiros
-name: Atualizar Finanças
+# Update finance assets indicators
+name: Update Finances
 on:
-  #  schedule:
-  # Executa toda sexta-feira às 10h (UTC)
-  #    - cron: "0 10 * * *"
-  workflow_dispatch: # Permite execução manual
-
+  schedule:
+    # Runs every day at 10A.M (UTC)
+    - cron: "0 10 * * *"
+  workflow_dispatch: # allows manual exec
 jobs:
   run-script:
     runs-on: ubuntu-latest
@@ -27,4 +26,17 @@ jobs:
           npm run build
           npm run start
 
-#        env:
+        env:
+          # SUPABSE
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_ID: ${{ secrets.SUPABASE_DB_ID }}
+          SUPABASE_DB_AWS_REGION: ${{ secrets.SUPABASE_DB_AWS_REGION }}
+          # SPREADSHEET
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          SPREADSHEET_RANGES: ${{ secrets.SPREADSHEET_RANGES }}
+          # GOOGLE
+          GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+          GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
+          GOOGLE_CLIENT_EMAIL: ${{ secrets.GOOGLE_CLIENT_EMAIL }}
+          # OTHERS
+          LANGUAGE: ${{ secrets.LANGUAGE }}
