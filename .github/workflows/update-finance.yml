@@ -10,18 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do código
+      - name: Checkout off code
         uses: actions/checkout@v4
 
-      - name: Instalar Node.js
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Instalar dependências
+      - name: Install Dependencies
         run: npm install
 
-      - name: Executar script
+      - name: Install Prisma Types
+        run: npx prisma generate
+
+      - name: Exec script
         run: |
           npm run build
           npm run start
