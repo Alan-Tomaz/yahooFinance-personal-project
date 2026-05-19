@@ -91,7 +91,7 @@ export const fetchTicketInfoFromYahooFinance = async (
 };
 
 /* CALC ALL FINANCIAL INDICATORS */
-const calcIndicatorsFromYahooFinance = (
+export const calcIndicatorsFromYahooFinance = (
   quote: any,
   fundamentalsTimeSeries: any,
   ticket: ITicker,
