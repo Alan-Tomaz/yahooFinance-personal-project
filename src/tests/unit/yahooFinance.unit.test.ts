@@ -1,3 +1,4 @@
+import { describe, it } from "node:test";
 import { LANGUAGE } from "../../constants/config.js";
 import {
   calcIndicatorsFromYahooFinance,
@@ -11,8 +12,9 @@ import {
   mockQuoteUndefined,
   mockTicket,
 } from "../__fixtures__/yahooFinance.js";
+import assert from "node:assert";
 
-describe("calculateIndicators", () => {
+describe("calculateIndicators units", () => {
   it("should calculate debt to equity correctly", () => {
     const result = calcIndicatorsFromYahooFinance(
       mockQuote,
@@ -20,7 +22,7 @@ describe("calculateIndicators", () => {
       mockTicket,
     );
 
-    expect(result).toMatchObject({
+    assert.deepStrictEqual(result, {
       assetType: "STOCK",
       ticker: "CMIG4",
       date: formatDate(new Date(), LANGUAGE),
@@ -49,7 +51,7 @@ describe("calculateIndicators", () => {
       mockTicket,
     );
 
-    expect(result).toMatchObject({
+    assert.deepStrictEqual(result, {
       assetType: "STOCK",
       ticker: "CMIG4",
       date: formatDate(new Date(), LANGUAGE),
@@ -74,13 +76,13 @@ describe("calculateIndicators", () => {
   it("should return empty object if quote is missing", () => {
     const result = calcIndicatorsFromYahooFinance(null, [], mockTicket);
 
-    expect(result).toEqual({});
+    assert.deepStrictEqual(result, {});
   });
 
   it("should return empty object when fundamentals are empty", () => {
     const result = calcIndicatorsFromYahooFinance(mockQuote, [], mockTicket);
 
-    expect(result).toEqual({});
+    assert.deepStrictEqual(result, {});
   });
 
   it("should return null when investedCapital is zero", () => {
@@ -90,6 +92,6 @@ describe("calculateIndicators", () => {
       investedCapital: 0,
     });
 
-    expect(result).toBeNull();
+    assert.strictEqual(result, null);
   });
 });

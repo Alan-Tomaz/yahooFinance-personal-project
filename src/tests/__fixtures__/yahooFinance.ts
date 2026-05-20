@@ -1,4 +1,7 @@
+import { LANGUAGE } from "../../constants/config.js";
+import type { StockIndicatorsCreateInput } from "../../generated/prisma/models.js";
 import type { ITicker } from "../../models/financial.js";
+import { formatDate } from "../../utils/formatDate.js";
 
 // YAHOO FINANCE MOCKS
 export const mockQuote = {
@@ -69,4 +72,35 @@ export const mockTicket: ITicker = {
   assetType: "STOCK",
   exchange: "BVMF",
   ticker: "CMIG4",
+};
+
+export const mockStockCreate: StockIndicatorsCreateInput = {
+  date: formatDate(new Date(), LANGUAGE),
+  price: 45,
+  ticker: mockTicket.ticker,
+  assetType: mockTicket.assetType,
+  cagrProfit: {
+    create: {
+      periodYears: 3,
+      value: 15,
+    },
+  },
+  cagrRevenue: {
+    create: {
+      periodYears: 3,
+      value: 10,
+    },
+  },
+  dy: 12,
+  evEbit: 3,
+  grossDebtNetWorth: 1.97,
+  liquidity: 35456,
+  name: mockTicket.ticker,
+  pl: 3.5,
+  pvp: 3.2,
+  roe: 10,
+  roic: 13,
+  profitMargin: 10,
+  sector: "ENERGY",
+  netDebtDivideByEBITDA: 2.35,
 };
