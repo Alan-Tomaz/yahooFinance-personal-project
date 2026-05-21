@@ -11,8 +11,8 @@ export const mockQuote = {
     averageVolume: 456465,
   },
   summaryProfile: {
-    industry: "Energy",
-    sector: "Utilities",
+    industry: "Technology",
+    sector: "Information Technology",
   },
   defaultKeyStatistics: {
     priceToBook: 1.5,
@@ -23,8 +23,8 @@ export const mockQuote = {
     profitMargins: 0.2845,
   },
   price: {
-    shortName: "CMIG4",
-    longName: "CMIG4",
+    shortName: "AAPL",
+    longName: "Apple Inc.",
     regularMarketPrice: 100,
   },
 };
@@ -68,17 +68,17 @@ export const mockFundamentals = [
 
 export const mockFundamentalsUndefined = [{}, {}];
 
-export const mockTicket: ITicker = {
+export const mockTicketStock: ITicker = {
   assetType: "STOCK",
-  exchange: "BVMF",
-  ticker: "CMIG4",
+  exchange: "NASDAQ",
+  ticker: "AAPL",
 };
 
 export const mockStockCreate: StockIndicatorsCreateInput = {
   date: formatDate(new Date(), LANGUAGE),
   price: 45,
-  ticker: mockTicket.ticker,
-  assetType: mockTicket.assetType,
+  ticker: mockTicketStock.ticker,
+  assetType: mockTicketStock.assetType,
   cagrProfit: {
     create: {
       periodYears: 3,
@@ -95,12 +95,12 @@ export const mockStockCreate: StockIndicatorsCreateInput = {
   evEbit: 3,
   grossDebtNetWorth: 1.97,
   liquidity: 35456,
-  name: mockTicket.ticker,
+  name: mockTicketStock.ticker,
   pl: 3.5,
   pvp: 3.2,
   roe: 10,
   roic: 13,
   profitMargin: 10,
-  sector: "ENERGY",
+  sector: "Information Technology",
   netDebtDivideByEBITDA: 2.35,
 };

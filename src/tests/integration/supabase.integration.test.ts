@@ -1,9 +1,8 @@
 import { after, before, describe, it } from "node:test";
 import { prisma } from "../../db/client.js";
 import assert from "node:assert";
-import { mockStockCreate, mockTicket } from "../__fixtures__/yahooFinance.js";
-import { LANGUAGE } from "../../constants/config.js";
-import { formatDate } from "../../utils/formatDate.js";
+import { mockStockCreate } from "../__fixtures__/yahooFinance.js";
+import { mockFiiCreate } from "../__fixtures__/scratchFIIData.js";
 
 describe("stockIndicators integration", () => {
   before(async () => {
@@ -76,7 +75,7 @@ describe("stockIndicators integration", () => {
     );
   });
 
-  it("should return only latest ticker", async () => {
+  it("should return only latest stock ticker", async () => {
     await prisma.stockIndicators.create({
       data: mockStockCreate,
     });
@@ -87,5 +86,80 @@ describe("stockIndicators integration", () => {
 
     assert.strictEqual(result.length, 1);
     assert.strictEqual(result[0].ticker, mockStockCreate.ticker);
+  });
+});
+
+describe("fiiIndicators integration", () => {
+  before(async () => {
+    await prisma.fiiIndicators.deleteMany();
+    await prisma.fiiRentability.deleteMany();
+  });
+
+  after(async () => {
+    await prisma.$disconnect();
+  });
+
+  it("should create fii with rentability relation", async () => {
+    const fii = await prisma.fiiIndicators.create({
+      data: mockFiiCreate,
+      include: {
+        rentability: true,
+      },
+    });
+
+    assert.notStrictEqual(fii.assetType, null);
+    assert.notStrictEqual(fii.assetsNumber, null);
+    assert.notStrictEqual(fii.dy, null);
+    assert.notStrictEqual(fii.date, null);
+    assert.notStrictEqual(fii.financialVacancy, null);
+    assert.notStrictEqual(fii.fiiType, null);
+    assert.notStrictEqual(fii.lastDividend, null);
+    assert.notStrictEqual(fii.rentability, null);
+    assert.notStrictEqual(fii.liquidity, null);
+    assert.notStrictEqual(fii.name, null);
+    assert.notStrictEqual(fii.physicalVacancy, null);
+    assert.notStrictEqual(fii.price, null);
+    assert.notStrictEqual(fii.pvp, null);
+    assert.notStrictEqual(fii.quotaHolders, null);
+    assert.notStrictEqual(fii.ticker, null);
+
+    assert.strictEqual(fii.assetType, mockFiiCreate.assetType);
+    assert.strictEqual(fii.assetsNumber, mockFiiCreate.assetsNumber);
+    assert.strictEqual(fii.name, mockFiiCreate.name);
+    assert.strictEqual(fii.fiiType, mockFiiCreate.fiiType);
+    assert.strictEqual(fii.ticker, mockFiiCreate.ticker);
+    assert.strictEqual(fii.date, mockFiiCreate.date);
+    assert.strictEqual(Number(fii.price), mockFiiCreate.price);
+    assert.strictEqual(Number(fii.dy), mockFiiCreate.dy);
+    assert.strictEqual(
+      Number(fii.financialVacancy),
+      mockFiiCreate.financialVacancy,
+    );
+    assert.strictEqual(Number(fii.lastDividend), mockFiiCreate.lastDividend);
+    assert.strictEqual(Number(fii.liquidity), mockFiiCreate.liquidity);
+    assert.strictEqual(Number(fii.pvp), mockFiiCreate.pvp);
+    assert.strictEqual(Number(fii.vpc), mockFiiCreate.vpc);
+    assert.strictEqual(Number(fii.quotaHolders), mockFiiCreate.quotaHolders);
+    assert.strictEqual(
+      Number(fii.rentability?.value),
+      mockFiiCreate.rentability?.create?.value,
+    );
+    assert.strictEqual(
+      Number(fii.physicalVacancy),
+      mockFiiCreate.physicalVacancy,
+    );
+  });
+
+  it("should return only latest fii ticker", async () => {
+    await prisma.fiiIndicators.create({
+      data: mockFiiCreate,
+    });
+
+    const result: any[] = await prisma.$queryRaw`
+    SELECT * FROM latest_fii_indicators
+  `;
+
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].ticker, mockFiiCreate.ticker);
   });
 });

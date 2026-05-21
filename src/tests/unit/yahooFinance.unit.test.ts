@@ -10,7 +10,7 @@ import {
   mockFundamentalsUndefined,
   mockQuote,
   mockQuoteUndefined,
-  mockTicket,
+  mockTicketStock,
 } from "../__fixtures__/yahooFinance.js";
 import assert from "node:assert";
 
@@ -19,15 +19,15 @@ describe("calculateIndicators units", () => {
     const result = calcIndicatorsFromYahooFinance(
       mockQuote,
       mockFundamentals,
-      mockTicket,
+      mockTicketStock,
     );
 
     assert.deepStrictEqual(result, {
       assetType: "STOCK",
-      ticker: "CMIG4",
+      ticker: "AAPL",
       date: formatDate(new Date(), LANGUAGE),
-      name: "CMIG4",
-      sector: "Utilities: Energy",
+      name: "AAPL",
+      sector: "Information Technology: Technology",
       price: 100,
       pl: 10,
       dy: 8,
@@ -48,14 +48,14 @@ describe("calculateIndicators units", () => {
     const result = calcIndicatorsFromYahooFinance(
       mockQuoteUndefined,
       mockFundamentalsUndefined,
-      mockTicket,
+      mockTicketStock,
     );
 
     assert.deepStrictEqual(result, {
       assetType: "STOCK",
-      ticker: "CMIG4",
+      ticker: "AAPL",
       date: formatDate(new Date(), LANGUAGE),
-      name: "CMIG4",
+      name: "AAPL",
       sector: "",
       price: 0,
       pl: 0,
@@ -74,13 +74,17 @@ describe("calculateIndicators units", () => {
   });
 
   it("should return empty object if quote is missing", () => {
-    const result = calcIndicatorsFromYahooFinance(null, [], mockTicket);
+    const result = calcIndicatorsFromYahooFinance(null, [], mockTicketStock);
 
     assert.deepStrictEqual(result, {});
   });
 
   it("should return empty object when fundamentals are empty", () => {
-    const result = calcIndicatorsFromYahooFinance(mockQuote, [], mockTicket);
+    const result = calcIndicatorsFromYahooFinance(
+      mockQuote,
+      [],
+      mockTicketStock,
+    );
 
     assert.deepStrictEqual(result, {});
   });
