@@ -9,6 +9,21 @@ jobs:
   run-script:
     runs-on: ubuntu-latest
 
+    env:
+      # SUPABSE
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_DB_ID: ${{ secrets.SUPABASE_DB_ID }}
+      SUPABASE_DB_AWS_REGION: ${{ secrets.SUPABASE_DB_AWS_REGION }}
+      # SPREADSHEET
+      SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+      SPREADSHEET_RANGES: ${{ secrets.SPREADSHEET_RANGES }}
+      # GOOGLE
+      GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
+      GOOGLE_CLIENT_EMAIL: ${{ secrets.GOOGLE_CLIENT_EMAIL }}
+      # OTHERS
+      LANGUAGE: ${{ secrets.LANGUAGE }}
+
     steps:
       - name: Checkout off code
         uses: actions/checkout@v4
@@ -41,18 +56,3 @@ jobs:
         run: |
           npm run build
           npm run start
-
-        env:
-          # SUPABSE
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          SUPABASE_DB_ID: ${{ secrets.SUPABASE_DB_ID }}
-          SUPABASE_DB_AWS_REGION: ${{ secrets.SUPABASE_DB_AWS_REGION }}
-          # SPREADSHEET
-          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
-          SPREADSHEET_RANGES: ${{ secrets.SPREADSHEET_RANGES }}
-          # GOOGLE
-          GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
-          GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
-          GOOGLE_CLIENT_EMAIL: ${{ secrets.GOOGLE_CLIENT_EMAIL }}
-          # OTHERS
-          LANGUAGE: ${{ secrets.LANGUAGE }}
