@@ -90,7 +90,8 @@ export const fetchTicketInfoFromYahooFinance = async (
   }
 };
 
-/* CALC ALL FINANCIAL INDICATORS */
+// CALC ALL FINANCIAL INDICATORS
+// Return values as null if undefined or null
 export const calcIndicatorsFromYahooFinance = (
   quote: any,
   fundamentalsTimeSeries: any,
@@ -108,23 +109,35 @@ export const calcIndicatorsFromYahooFinance = (
   /* industry */
   let sector;
   if (
-    quote.summaryProfile.sector ||
+    quote.summaryProfile.sector != undefined ||
     quote.summaryProfile.sector != null ||
-    quote.summaryProfile.industry ||
+    quote.summaryProfile.industry != undefined ||
     quote.summaryProfile.industry != null
   ) {
     sector = `${quote.summaryProfile.sector}: ${quote.summaryProfile.industry}`;
   }
   /* price */
   const price = quote.price.regularMarketPrice;
-  /* PL */
-  const pl = quote.summaryDetail.trailingPE;
+  /* PE */
+  const pe = quote.summaryDetail.trailingPE;
   /* DY */
-  const dy = quote.summaryDetail.dividendYield;
-  /* PVP */
-  const pvp = quote.defaultKeyStatistics.priceToBook;
+  let dy;
+  if (
+    quote.summaryDetail.dividendYield != undefined &&
+    quote.summaryDetail.dividendYield != null
+  ) {
+    dy = toPercent(quote.summaryDetail.dividendYield);
+  }
+  /* P/BV */
+  const pbv = quote.defaultKeyStatistics.priceToBook;
   /* ROE */
-  const roe = quote.financialData.returnOnEquity || 0;
+  let roe;
+  if (
+    quote.financialData.returnOnEquity != undefined &&
+    quote.financialData.returnOnEquity != null
+  ) {
+    roe = toPercent(quote.financialData.returnOnEquity);
+  }
   /* CAGR PROFIT */
   let cagrProfit;
   let yearsCagrProfit;
@@ -138,7 +151,12 @@ export const calcIndicatorsFromYahooFinance = (
     "netIncome",
   )[calcCagrYahooFinance(fundamentalsTimeSeries, "netIncome").length - 1];
 
-  if (firstCagrProfit && lastCagrProfit) {
+  if (
+    firstCagrProfit != undefined &&
+    firstCagrProfit != null &&
+    lastCagrProfit != undefined &&
+    lastCagrProfit != null
+  ) {
     yearsCagrProfit =
       new Date(lastCagrProfit.date).getFullYear() -
       new Date(firstCagrProfit.date).getFullYear();
@@ -162,7 +180,12 @@ export const calcIndicatorsFromYahooFinance = (
     "totalRevenue",
   )[calcCagrYahooFinance(fundamentalsTimeSeries, "totalRevenue").length - 1];
 
-  if (firstCagrProfit && lastCagrProfit) {
+  if (
+    firstCagrRevenue != undefined &&
+    firstCagrRevenue != null &&
+    lastCagrRevenue != undefined &&
+    lastCagrRevenue != null
+  ) {
     yearsCagrRevenue =
       new Date(lastCagrRevenue.date).getFullYear() -
       new Date(firstCagrRevenue.date).getFullYear();
@@ -174,7 +197,13 @@ export const calcIndicatorsFromYahooFinance = (
       100;
   }
   /* PROFIT MARGIN */
-  const profitMargin = toPercent(quote.financialData.profitMargins);
+  let profitMargin;
+  if (
+    quote.financialData.profitMargins != undefined &&
+    quote.financialData.profitMargins != null
+  ) {
+    profitMargin = toPercent(quote.financialData.profitMargins);
+  }
   /* ROIC */
   const roic = calculateROICYahooFinance(
     fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1],
@@ -182,18 +211,49 @@ export const calcIndicatorsFromYahooFinance = (
   /* liquidity */
   const liquidity = quote.summaryDetail.averageVolume;
   /* ev/ebit */
-  const evEbit =
-    quote.defaultKeyStatistics.enterpriseValue /
-    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].EBIT;
+  let evEbit;
+  if (
+    quote.defaultKeyStatistics.enterpriseValue != undefined &&
+    quote.defaultKeyStatistics.enterpriseValue != null &&
+    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].EBIT !=
+      undefined &&
+    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].EBIT != null
+  ) {
+    evEbit =
+      quote.defaultKeyStatistics.enterpriseValue /
+      fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].EBIT;
+  }
   /* netDebtEbitda  */
-  const netDebtEbitda =
-    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].netDebt /
-    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].EBITDA;
+  let netDebtEbitda;
+  if (
+    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].netDebt !=
+      undefined &&
+    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].netDebt != null &&
+    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].EBITDA !=
+      undefined &&
+    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].EBITDA != null
+  ) {
+    netDebtEbitda =
+      fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].netDebt /
+      fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].EBITDA;
+  }
   /* grossDebtNetWorth */
-  const debtToEquityPercent =
-    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].totalDebt /
+  let debtToEquityPercent;
+  if (
+    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].totalDebt !=
+      undefined &&
+    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].totalDebt !=
+      null &&
     fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1]
-      .stockholdersEquity;
+      .stockholdersEquity != undefined &&
+    fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1]
+      .stockholdersEquity != null
+  ) {
+    debtToEquityPercent =
+      fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1].totalDebt /
+      fundamentalsTimeSeries[fundamentalsTimeSeries.length - 1]
+        .stockholdersEquity;
+  }
   /* ===== STOCK INDICATORS ===== */
   const ticketInfo: Prisma.StockIndicatorsCreateInput = {
     assetType: ticket.assetType,
@@ -201,35 +261,38 @@ export const calcIndicatorsFromYahooFinance = (
     /* FORMAT DATE IN DD/MM/YYYY FORMAT */
     date: formatDate(new Date(), LANGUAGE),
     name,
-    sector: sector || "",
-    price: price || 0,
-    pl: pl || 0,
-    dy: normalizeDy(dy) || 0,
-    pvp: pvp || 0,
-    roe: toPercent(roe) || 0,
-    profitMargin: profitMargin || 0,
-    roic: roic || 0,
-    evEbit: evEbit || 0,
-    netDebtDivideByEBITDA: netDebtEbitda || 0,
-    grossDebtNetWorth: debtToEquityPercent || 0,
-    liquidity: liquidity || 0,
+    sector: sector ?? null,
+    price: price ?? null,
+    pe: pe ?? null,
+    dy: dy ?? null,
+    pbv: pbv ?? null,
+    roe: roe ?? null,
+    profitMargin: profitMargin ?? null,
+    roic: roic ?? null,
+    evEbit: evEbit ?? null,
+    netDebtDivideByEBITDA: netDebtEbitda ?? null,
+    grossDebtNetWorth: debtToEquityPercent ?? null,
+    liquidity: liquidity ?? null,
     cagrProfit: {
       create: {
-        value: cagrProfit || 0,
-        periodYears: yearsCagrProfit || 0,
+        value: cagrProfit ?? null,
+        periodYears: yearsCagrProfit ?? null,
       },
     },
     cagrRevenue: {
       create: {
-        value: cagrRevenue || 0,
-        periodYears: yearsCagrRevenue || 0,
+        value: cagrRevenue ?? null,
+        periodYears: yearsCagrRevenue ?? null,
       },
     },
   };
   return ticketInfo;
 };
 
-const calcCagrYahooFinance = (fundamentalsTimeSeries: any, property: any) =>
+export const calcCagrYahooFinance = (
+  fundamentalsTimeSeries: any,
+  property: any,
+) =>
   fundamentalsTimeSeries
     .filter(
       (item: any) =>
@@ -242,6 +305,10 @@ const calcCagrYahooFinance = (fundamentalsTimeSeries: any, property: any) =>
 
 export const calculateROICYahooFinance = (fundamentals: any) => {
   const { EBIT, taxRateForCalcs, investedCapital } = fundamentals;
+
+  if (!EBIT || !taxRateForCalcs || !investedCapital) {
+    return null;
+  }
 
   if (
     typeof EBIT !== "number" ||

@@ -2,8 +2,8 @@ import dotenv from "dotenv";
 dotenv.config();
 import { updateFinancial } from "./scripts/updateFinancial.js";
 
-console.log("============ Script Iniciado ============");
+console.log("============ Script Started ============");
 
 await updateFinancial();
 
-console.log("============ Script Finalizado ============");
+console.log("============ Script Completed ============");

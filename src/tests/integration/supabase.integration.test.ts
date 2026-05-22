@@ -4,7 +4,7 @@ import assert from "node:assert";
 import { mockStockCreate } from "../__fixtures__/yahooFinance.js";
 import { mockFiiCreate } from "../__fixtures__/scratchFIIData.js";
 
-describe("stockIndicators integration", () => {
+describe("supbaseStockIndicators integration", () => {
   before(async () => {
     await prisma.stockIndicators.deleteMany();
     await prisma.stockCagr.deleteMany();
@@ -28,11 +28,12 @@ describe("stockIndicators integration", () => {
     assert.notStrictEqual(stock.assetType, null);
     assert.notStrictEqual(stock.date, null);
     assert.notStrictEqual(stock.dy, null);
+    assert.notStrictEqual(stock.pbv, null);
     assert.notStrictEqual(stock.evEbit, null);
     assert.notStrictEqual(stock.grossDebtNetWorth, null);
     assert.notStrictEqual(stock.liquidity, null);
     assert.notStrictEqual(stock.netDebtDivideByEBITDA, null);
-    assert.notStrictEqual(stock.pl, null);
+    assert.notStrictEqual(stock.pe, null);
     assert.notStrictEqual(stock.price, null);
     assert.notStrictEqual(stock.profitMargin, null);
     assert.notStrictEqual(stock.roe, null);
@@ -53,8 +54,8 @@ describe("stockIndicators integration", () => {
       mockStockCreate.grossDebtNetWorth,
     );
     assert.strictEqual(Number(stock.liquidity), mockStockCreate.liquidity);
-    assert.strictEqual(Number(stock.pl), mockStockCreate.pl);
-    assert.strictEqual(Number(stock.pvp), mockStockCreate.pvp);
+    assert.strictEqual(Number(stock.pe), mockStockCreate.pe);
+    assert.strictEqual(Number(stock.pbv), mockStockCreate.pbv);
     assert.strictEqual(
       Number(stock.profitMargin),
       mockStockCreate.profitMargin,
@@ -89,7 +90,7 @@ describe("stockIndicators integration", () => {
   });
 });
 
-describe("fiiIndicators integration", () => {
+describe("supabaseFiiIndicators integration", () => {
   before(async () => {
     await prisma.fiiIndicators.deleteMany();
     await prisma.fiiRentability.deleteMany();

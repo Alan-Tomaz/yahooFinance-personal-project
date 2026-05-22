@@ -22,14 +22,15 @@ export const scratchFIIData = async (ticker: ITicker) => {
     });
 
     const $ = cheerio.load(data);
+
     const html = $.html();
 
-    /*   if (NODE_ENV === "dev") {
+    /*     if (NODE_ENV === "dev") {
       saveTextInFile(html);
     } */
 
     const fiiIndicators: Prisma.FiiIndicatorsCreateInput =
-      calculateFIIIndicators($, ticker);
+      calculateFIIIndicators(html, ticker);
 
     console.log(
       `Info for ticket ${ticker.ticker} fetched successfully Funds Explorer.`,
@@ -42,14 +43,24 @@ export const scratchFIIData = async (ticker: ITicker) => {
   }
 };
 
-const calculateFIIIndicators = (
-  pageObj: any,
+export const calculateFIIIndicators = (
+  html: any,
   ticker: ITicker,
 ): Prisma.FiiIndicatorsCreateInput => {
   //  FII INDICATORS
-  const html = pageObj.html();
   const match = html.match(/var dataLayer_content = ({.*?});/s);
+  if (!match) {
+    throw new Error("Could not find dataLayer_content in the HTML.");
+  }
+  if (match.length < 2) {
+    throw new Error(
+      "dataLayer_content match does not contain the expected data.",
+    );
+  }
   const varData = JSON.parse(match[1]);
+  if (!varData.pagePostTerms || !varData.pagePostTerms.meta) {
+    throw new Error("dataLayer_content does not contain pagePostTerms.meta.");
+  }
   const meta = varData.pagePostTerms.meta;
 
   const vacanciasFisicas = [
@@ -87,17 +98,18 @@ const calculateFIIIndicators = (
     physicalVacancy: ultimaVacanciaFisica?.valor ?? null,
     pvp: meta.pvp ?? null,
     quotaHolders: meta.numero_cotista ?? null,
-    ticker: meta.codigo ?? "",
+    ticker: meta.codigo ?? null,
     vpc: meta.valorpatrimonialcota ?? null,
-    name: meta.name ?? "",
-    price: meta.valor ?? 0,
-    fiiType: meta.setor_atuacao ?? "",
+    name: meta.name ?? null,
+    price: meta.valor ?? null,
+    fiiType: meta.setor_atuacao ?? null,
     rentability: {
       create: {
-        value: meta.valorizacao_12_meses,
+        value: meta.valorizacao_12_meses ?? null,
         periodYears: 1,
       },
     },
   };
+
   return fiiIndicators;
 };

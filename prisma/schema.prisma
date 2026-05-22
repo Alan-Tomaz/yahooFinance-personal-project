@@ -20,8 +20,8 @@ model StockIndicators {
   name String?
   sector String?
   price Decimal
-  pl Decimal?
-  pvp Decimal?
+  pe Decimal?
+  pbv Decimal?
   dy Decimal?
   roe Decimal?
   roic Decimal?

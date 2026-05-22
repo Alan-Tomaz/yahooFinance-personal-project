@@ -3,8 +3,51 @@ import { LANGUAGE } from "../../constants/config.js";
 import type { FiiIndicatorsCreateInput } from "../../generated/prisma/models.js";
 import type { ITicker } from "../../models/financial.js";
 import { formatDate } from "../../utils/formatDate.js";
+import fs from "fs";
 
 // FII MOCKS
+export const mockCheerioHtml = fs.readFileSync(
+  "./src/tests/__fixtures__/cheerioFIIFetchedHtml.html",
+  "utf-8",
+);
+
+export const mockCheerioSiteFunctionResponse = {
+  assetType: "FII",
+  date: formatDate(new Date(), LANGUAGE),
+  dy: 14.027,
+  financialVacancy: null,
+  lastDividend: 1.1,
+  liquidity: 15449490.32,
+  assetsNumber: 14,
+  physicalVacancy: null,
+  pvp: 1.0194,
+  quotaHolders: 549972,
+  ticker: "KNCR11",
+  vpc: 102.38,
+  name: "Kinea Rendimentos Imobiliários",
+  price: 105.91,
+  fiiType: "Fundo de Papel",
+  rentability: { create: { value: 14.34, periodYears: 1 } },
+};
+
+export const mockCheerioSiteFunctionResponseNull = {
+  assetType: "FII",
+  date: formatDate(new Date(), LANGUAGE),
+  dy: null,
+  financialVacancy: null,
+  lastDividend: null,
+  liquidity: null,
+  assetsNumber: null,
+  physicalVacancy: null,
+  pvp: null,
+  quotaHolders: null,
+  ticker: "KNCR11",
+  vpc: null,
+  name: null,
+  price: null,
+  fiiType: null,
+  rentability: { create: { value: null, periodYears: null } },
+};
 
 export const mockTicketFii: ITicker = {
   assetType: "FII",
