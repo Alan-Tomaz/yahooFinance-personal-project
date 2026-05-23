@@ -25,6 +25,11 @@ export const scratchDataFromSite = async (url: string) => {
       throw puppeteerErr;
     }
   } finally {
+    if (!data) {
+      throw new Error(
+        `Failed to fetch data from URL: ${url} using both Cheerio and Puppeteer.`,
+      );
+    }
     $ = cheerio.load(data);
     return $;
   }
