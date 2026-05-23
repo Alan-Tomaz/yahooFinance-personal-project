@@ -30,6 +30,8 @@
     "express": "^5.2.1",
     "googleapis": "^171.4.0",
     "puppeteer": "^25.0.4",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "yahoo-finance2": "^3.14.0"
   }
 }

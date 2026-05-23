@@ -1,6 +1,9 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
+
+(puppeteer as any).use(StealthPlugin());
 
 /**
  * Fetches data from the given site
@@ -11,7 +14,7 @@ export const scratchDataFromSite = async (url: string) => {
   let data;
   let $;
   try {
-    data = await fetchWithCheerio(`${url}`);
+    data = await fetchWithCheerio(`${url}444`);
   } catch (err) {
     console.warn(
       `Cheerio Fetch failed for URL: ${url}. Err: ${err}, trying with puppeteer...`,
@@ -58,7 +61,7 @@ const fetchWithCheerio = async (url: string) => {
 const fetchWithPuppeteer = async (url: string) => {
   let browser;
   try {
-    browser = await puppeteer.launch({
+    browser = await (puppeteer as any).launch({
       headless: true,
     });
     const page = await browser.newPage();
